@@ -3,8 +3,9 @@ import tweepy
 import logging
 import pandas as pd
 import json
+from textblob import TextBlob
 from configparser import RawConfigParser
-
+from pprint import pprint
 
 # TODO:
 # 1. continuously store json file into local -- Done
@@ -38,30 +39,38 @@ class StreamListener(tweepy.StreamListener):
         #              (description text, loc text, text text, coordinates real, price real)
         #              ''')
 
-    def on_data(self, data):
+    def on_status(self, status):
         # print(type(data))
         try:
-            if len(self.tweets_list) < 1000:
-                self.tweets_list.append(json.loads(data))
+            tweets_data = status._json
+            try:
+                tweets_data['text'] = status.extended_tweet['full_text']
+            except AttributeError:
                 pass
-            else:
+            sentiment = TextBlob(tweets_data['text']).sentiment
+            tweets_data['sentiment'] = {}
+            tweets_data['sentiment']['polarity'] = sentiment.polarity
+            tweets_data['sentiment']['subjectivity'] = sentiment.subjectivity
+            self.tweets_list.append(tweets_data)
+            # pprint(tweets_data)
+            print(tweets_data['text'], tweets_data['sentiment'])
+            if len(self.tweets_list) > 100:
                 print("saving cache....")
                 now = datetime.datetime.utcnow()
                 filename = now.strftime("tweetsCache/%Y%m%dT%H%M%S.json")
                 with open(filename, 'w+') as f:
                     json.dump(self.tweets_list, f)
                 self.tweets_list = []
-            print(data)
             return True
         except BaseException as e:
-            print("Error on_data: %s" % str(e))
+            print("Error on_status: %s" % str(e))
         return True
 
 
     def on_error(self, status_code):
         logging.warning(status_code)
         if status_code == 420:
-            self.file_handler.close()
+            # self.file_handler.close()
             # returning False in on_data disconnects the stream
             return False
 
@@ -83,7 +92,7 @@ def main():
     auth.set_access_token(ACCESS_TOEKN_KEY, ACCESS_TOKEN_SECRET)
     api = tweepy.API(auth)
     stream_listener = StreamListener()
-    stream = tweepy.Stream(auth=api.auth, listener=stream_listener)
+    stream = tweepy.Stream(auth=api.auth, listener=stream_listener, tweet_mode='extended')
     logging.info("starting twitter listener...")
     stream.filter(track=['$' + i for i in get_stock_ticks()], languages=['en'], is_async=True)
 
