@@ -4,7 +4,10 @@ import logging
 import pandas as pd
 import json
 from textblob import TextBlob
+import re
 from configparser import RawConfigParser
+from time import sleep
+import sys
 from pprint import pprint
 
 # TODO:
@@ -39,6 +42,17 @@ class StreamListener(tweepy.StreamListener):
         #              (description text, loc text, text text, coordinates real, price real)
         #              ''')
 
+    def process(self, text):
+        text = re.sub("[0-9]+", "number", text)
+        text = re.sub("#", "", text)
+        text = re.sub("\n", "", text)
+        text = re.sub("$[^\s]+", "", text)
+        text = re.sub("@[^\s]+", "", text)
+        text = re.sub("(http|https)://[^\s]*", "", text)
+        text = re.sub("[^\s]+@[^\s]+", "", text)
+        text = re.sub('[^a-z A-Z]+', '', text)
+        return text
+
     def on_status(self, status):
         # print(type(data))
         try:
@@ -47,7 +61,7 @@ class StreamListener(tweepy.StreamListener):
                 tweets_data['text'] = status.extended_tweet['full_text']
             except AttributeError:
                 pass
-            sentiment = TextBlob(tweets_data['text']).sentiment
+            sentiment = TextBlob(self.process(tweets_data['text'])).sentiment
             tweets_data['sentiment'] = {}
             tweets_data['sentiment']['polarity'] = sentiment.polarity
             tweets_data['sentiment']['subjectivity'] = sentiment.subjectivity
@@ -94,8 +108,9 @@ def main():
     stream_listener = StreamListener()
     stream = tweepy.Stream(auth=api.auth, listener=stream_listener, tweet_mode='extended')
     logging.info("starting twitter listener...")
-    stream.filter(track=['$' + i for i in get_stock_ticks()], languages=['en'], is_async=True)
 
+    stream.filter(track=['$' + i for i in ['AAPL', 'AMD', 'AMZN', 'FB', 'GOOG', 'MSFT']], languages=['en'], is_async=True)
+    # various exception handling blocks
 
 
 '''
@@ -104,8 +119,29 @@ file_name = 'tweetsCache/20190325T211635.json'
 with open(file_name, 'r') as f:
     w=json.load(f)
 '''
+try:
+    if __name__ == '__main__':
+        logging.basicConfig(level=logging.INFO,
+                            format='%(asctime)s %(levelname)s %(message)s')
+        main()
+except KeyboardInterrupt:
+    sys.exit()
+except AttributeError as e:
+    print('AttributeError was returned, stupid bug')
+    pass
+except tweepy.TweepError as e:
+    print('Below is the printed exception')
+    print(e)
+    if '401' in e:
+        # not sure if this will even work
+        print('Below is the response that came in')
+        print(e)
+        sleep(60)
+        pass
+    else:
+        # raise an exception if another status code was returned, we don't like other kinds
+        raise e
+except Exception as e:
+    print('Unhandled exception')
+    raise e
 
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s %(levelname)s %(message)s')
-    main()
