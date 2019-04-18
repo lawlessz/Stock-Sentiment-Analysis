@@ -8,6 +8,7 @@ import re
 from configparser import RawConfigParser
 from time import sleep
 import sys
+import notification
 from pprint import pprint
 
 # TODO:
@@ -18,7 +19,7 @@ from pprint import pprint
 import threading
 
 lock = threading.Lock()
-
+email_worker = notification.OutlookClient()
 
 # 1. twitter break ->
 # 2. sql server break -> queue => pickle to pick up
@@ -88,6 +89,11 @@ class StreamListener(tweepy.StreamListener):
             # returning False in on_data disconnects the stream
             return False
 
+    def on_exception(self, exception):
+        global email_worker
+        email_worker.sendEmailMIME(['luoy2@hotmail.com'], 'CS498 Tweets Collector Exception', str(exception))
+        return
+
 
 def get_stock_ticks():
     stock_data = pd.read_csv('high_volume_ticks.csv')
@@ -108,7 +114,7 @@ def main():
     stream_listener = StreamListener()
     stream = tweepy.Stream(auth=api.auth, listener=stream_listener, tweet_mode='extended')
     logging.info("starting twitter listener...")
-
+    email_worker.sendEmailMIME(['luoy2@hotmail.com'], 'CS498 Tweets Collector', 'twitter listener started...')
     stream.filter(track=['$' + i for i in ['AAPL', 'AMD', 'AMZN', 'FB', 'GOOG', 'MSFT']], languages=['en'], is_async=True)
     # various exception handling blocks
 
@@ -126,9 +132,6 @@ try:
         main()
 except KeyboardInterrupt:
     sys.exit()
-except AttributeError as e:
-    print('AttributeError was returned, stupid bug')
-    pass
 except tweepy.TweepError as e:
     print('Below is the printed exception')
     print(e)
@@ -139,9 +142,12 @@ except tweepy.TweepError as e:
         sleep(60)
         pass
     else:
+        email_worker.sendEmailMIME(['luoy2@hotmail.com'], 'CS498 Tweets Collector Unhandled Tweepy Exception', str(e))
+        print(e)
         # raise an exception if another status code was returned, we don't like other kinds
         raise e
 except Exception as e:
+    email_worker.sendEmailMIME(['luoy2@hotmail.com'], 'CS498 Tweets Collector Unhandled Exception', str(e))
     print('Unhandled exception')
     raise e
 
