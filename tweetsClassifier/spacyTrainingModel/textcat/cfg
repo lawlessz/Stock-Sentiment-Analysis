@@ -1,0 +1,11 @@
+{
+  "deprecation_fixes":{
+    "vectors_name":"spacy_pretrained_vectors"
+  },
+  "labels":[
+    "Neutral",
+    "Bullish",
+    "Bearish"
+  ],
+  "pretrained_vectors":null
+}
