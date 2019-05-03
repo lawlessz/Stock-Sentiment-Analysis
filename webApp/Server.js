@@ -15,8 +15,10 @@ app.get('/', function (req, res) {
 var pool = mysql.createPool({
     host: "usdb.yikangquant.club",
     user: "cs498cca_web",
-    password: "@cs498cca_web",
-    database: "stock_prices"
+    password: "cs498cca_web",
+    database: "stock_prices",
+    connectionLimit : 10,               // this is the max number of connections before your pool starts waiting for a release
+    multipleStatements : true
 });
 
 
@@ -48,7 +50,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('updateTweetVolume', function (ticker) {
-        var sql_statement = "SELECT * FROM " + ticker.toUpperCase() + "_1H";
+        var sql_statement = "SELECT * FROM tweets_features." + ticker.toUpperCase() + "_1H";
         pool.getConnection(function (err, connection) {
             // Use the connection
             connection.query(sql_statement, function (err, result) {
@@ -82,7 +84,7 @@ io.on('connection', function (socket) {
     });
 
     socket.on('regressionUpdate', function (ticker) {
-        sql_statement = "SELECT * FROM " + ticker.toUpperCase() + "_1H_REGRESSION";
+        sql_statement = "SELECT * FROM tweets_features." + ticker.toUpperCase() + "_1H_REGRESSION";
         pool.getConnection(function (err, connection) {
             // Use the connection
             connection.query(sql_statement, function (err, result) {
