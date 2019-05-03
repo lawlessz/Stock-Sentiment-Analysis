@@ -3,7 +3,8 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mysql = require('mysql');
 var fs = require('fs');
-
+// var ini_ = require('ini');
+// var config = ini_.parse(fs.readFileSync('./credentials/mysql_password_db.cnf', 'utf-8'));
 
 
 app.get('/', function (req, res) {
