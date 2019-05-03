@@ -9,4 +9,4 @@ Class project for CS498 CCA Spring 2019
   - https://marcobonzanini.com/2015/03/02/mining-twitter-data-with-python-part-1/comment-page-1/
 3. use existing model to predict twitter sentiment score (Done)
 4. set up database on the cloud (Done)
-5. [deploy website on cloud](http://usdb.yikangquant.club:3000)
+5. [deploy website on cloud](http://usdb.yikangquant.club:30000)
