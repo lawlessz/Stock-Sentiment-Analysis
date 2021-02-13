@@ -8,7 +8,8 @@ import re
 from configparser import RawConfigParser
 from time import sleep
 import sys
-import notification
+#import notification
+#from notification.email_notification import * 
 from pprint import pprint
 
 # TODO:
@@ -19,7 +20,7 @@ from pprint import pprint
 import threading
 
 lock = threading.Lock()
-email_worker = notification.OutlookClient()
+#email_worker = notification.OutlookClient()
 
 # 1. twitter break ->
 # 2. sql server break -> queue => pickle to pick up
@@ -90,8 +91,9 @@ class StreamListener(tweepy.StreamListener):
             return False
 
     def on_exception(self, exception):
-        global email_worker
-        email_worker.sendEmailMIME(['luoy2@hotmail.com'], 'CS498 Tweets Collector Exception', str(exception))
+        #global email_worker
+        #email_worker.sendEmailMIME(['z.law@comcast.net'], 'CS498 Tweets Collector Exception', str(exception))
+        print("Error on_status: %s" % str(exception))
         return
 
 
@@ -114,8 +116,9 @@ def main():
     stream_listener = StreamListener()
     stream = tweepy.Stream(auth=api.auth, listener=stream_listener, tweet_mode='extended')
     logging.info("starting twitter listener...")
-    email_worker.sendEmailMIME(['luoy2@hotmail.com'], 'CS498 Tweets Collector', 'twitter listener started...')
-    stream.filter(track=['$' + i for i in ['AAPL', 'AMD', 'AMZN', 'FB', 'GOOG', 'MSFT']], languages=['en'], is_async=True)
+    #email_worker.sendEmailMIME(['z.law@comcast.net'], 'CS498 Tweets Collector', 'twitter listener started...')
+    #stream.filter(track=['$' + i for i in ['AAPL', 'AMD', 'AMZN', 'FB', 'GOOG', 'MSFT']], languages=['en'], is_async=True)
+    stream.filter(track=['$' + i for i in ['bitcoin', 'btc']], languages=['en'], is_async=True)
     # various exception handling blocks
 
 
