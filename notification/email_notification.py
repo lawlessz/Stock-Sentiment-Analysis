@@ -228,7 +228,12 @@ class OutlookClient(object):
 
 if __name__ == '__main__':
     email_client = OutlookClient()
-    recipient = ['luoy2@hotmail.com', '410328235@qq.com']
+    #recipient = ['luoy2@hotmail.com', '410328235@qq.com']
+    recipient = ['z.law@comcast.net', 'z.law@comcast.net']
     subject = 'testing email from cs498cca project'
     content = 'this is a test email'
     email_client.sendEmailMIME(recipient, subject, content)
+
+
+
+

@@ -17,12 +17,12 @@ except tweepy.TweepError as e:
         sleep(60)
         pass
     else:
-        email_worker.sendEmailMIME(['luoy2@hotmail.com'], 'CS498 Tweets Collector Unhandled Tweepy Exception', str(e))
+        #email_worker.sendEmailMIME(['z.law@comcast.net'], 'CS498 Tweets Collector Unhandled Tweepy Exception', str(e))
         print(e)
         # raise an exception if another status code was returned, we don't like other kinds
         raise e
 except Exception as e:
-    email_worker.sendEmailMIME(['luoy2@hotmail.com'], 'CS498 Tweets Collector Unhandled Exception', str(e))
+    #email_worker.sendEmailMIME(['z.law@comcast.net'], 'CS498 Tweets Collector Unhandled Exception', str(e))
     print('Unhandled exception')
     raise e
 
